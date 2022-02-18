@@ -12,4 +12,6 @@ public:
 	virtual struct copyBuffer& getCopyBuffer() = 0;
 
 	virtual struct olc::Pixel getSelectColour() = 0;
+
+	virtual void ClickButton(std::string buttonName) = 0;
 };

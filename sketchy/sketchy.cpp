@@ -13,6 +13,8 @@ class sketchy : public olc::PixelGameEngine, sketchyIf
 private:
 	std::vector<region*> _regions;
 
+	std::map<std::string, std::pair<buttonRegion*, button*>> _clickables;
+
 	std::vector<dfile*> _dfiles;
 	int _dfilePage = 0;
 
@@ -83,6 +85,11 @@ public:
 		return _copyBuffer;
 	}
 
+	void ClickButton(std::string buttonName) override {
+		std::pair<buttonRegion*, button*> regionalWineLady = _clickables[buttonName];
+		regionalWineLady.first->select(regionalWineLady.second);
+	}
+
 
 public:
 	void OnDropFile(const std::string& filename) override
@@ -105,9 +112,12 @@ public:
 		auto modeButtons = new buttonRegion();
 		auto charButton = new textButton(basex, 192 - 20, _dfile, "CHAR", [this]() {setMode(0); });
 		modeButtons->add(charButton);
+		_clickables["char"] = std::pair<buttonRegion*, button*>(modeButtons, charButton);
 		modeButtons->select(charButton);
 		modeButtons->add(new textButton(basex + 40, 192 - 20, _dfile, "BLOCK", [this]() {setMode(1); }));
-		modeButtons->add(new textButton(basex, 192 - 8, _dfile, "SELECT", [this]() {setMode(2); }));
+		auto selectButton = new textButton(basex, 192 - 8, _dfile, "SELECT", [this]() {setMode(2); });
+		modeButtons->add(selectButton);
+		_clickables["select"] = std::pair<buttonRegion*, button*>(modeButtons, selectButton);
 		modeButtons->add(new lgModeButton(basex + 56, 192 - 8, _dfile, 0xB1, [this](int c)
 			{
 				setMode(c == 0xB1 ? 3 : 4);
@@ -115,11 +125,15 @@ public:
 				_dfile->getSelectRect(tl, br);
 				_dfile->setSelectRect(tl, tl);
 			}));
-		_regions.push_back(modeButtons);
-		modeButtons->add(new textButton(basex, 192 + 4, _dfile, "PASTE", [this]() {
+
+		auto pasteButton = new textButton(basex, 192 + 4, _dfile, "PASTE", [this]() {
 			setMode(5);
 			_copyBuffer.pos = olc::vi2d(0, 0);
-			}));
+			});
+		modeButtons->add(pasteButton);
+		_clickables["paste"] = std::pair<buttonRegion*, button*>(modeButtons, pasteButton);
+
+		_regions.push_back(modeButtons);
 
 		auto characterButtons = new buttonRegion();
 		for (int i = 0; i < 128; ++i) {
@@ -127,9 +141,9 @@ public:
 			int dy = (i / 8) * 10;
 
 			auto b = new charsetButton(basex + dx, 8 + dy, _dfile, i,
-				[this, modeButtons, charButton](int c) {
+				[this](int c) {
 					if (getMode() == 1) {
-						modeButtons->select(charButton);
+						ClickButton("char");
 					}
 					setCurChar(c);
 				});
@@ -177,12 +191,12 @@ public:
 
 		auto pageButtons = new buttonRegion();
 		for (int i = 0; i < 4; ++i) {
-			auto b = new pageButton(8 + (21 + i) * 10, 204, _dfile, 0x1c + i,
+			auto b = new pageButton(8 + (21 + i) * 10, 204, _dfile, 0x1d + i,
 				[this](int c) {
-					setPage(c - 0x1c);
+					setPage(c - 0x1d);
 				},
 				[this](int c)->bool {
-					return _dfilePage == c - 0x1c;
+					return _dfilePage == c - 0x1d;
 				} );
 			pageButtons->add(b);
 
