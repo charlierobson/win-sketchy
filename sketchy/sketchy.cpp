@@ -23,6 +23,8 @@ private:
 
 	olc::Pixel _selectColour = olc::DARK_YELLOW;
 
+	dfile* _dfile;
+
 private:
 	void DoFileOp(std::function<void(LPOPENFILENAME)> action) {
 		OPENFILENAME ofn;
@@ -45,10 +47,6 @@ private:
 	void DoCopy() {
 		_copyBuffer = _dfile->copy();
 	}
-
-public:
-	// todo make these  private, add getters
-	dfile* _dfile;
 
 public:
 	sketchy()
