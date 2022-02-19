@@ -54,7 +54,7 @@ void dfile::doPlot(int x, int y, int mode) {
     auto i = x / 2 + y / 2 * 32;
     auto c = _dfile[i];
 
-    if ((c & 127) > 8) {
+    if ((c & 127) > 7) {
         c = 0;
     }
     if (c > 127) {
