@@ -53,7 +53,7 @@ private:
 public:
 	sketchy()
 	{
-		sAppName = "Sketchy ZX81 screen editor V1.3";
+		sAppName = "Sketchy ZX81 screen editor V1.31";
 	}
 
 	void setMode(int mode) {
@@ -87,7 +87,8 @@ public:
 
 	void ClickButton(std::string buttonName) override {
 		std::pair<buttonRegion*, button*> regionalWineLady = _clickables[buttonName];
-		regionalWineLady.first->select(regionalWineLady.second);
+		if (regionalWineLady.first != nullptr)
+			regionalWineLady.first->select(regionalWineLady.second);
 	}
 
 
@@ -145,7 +146,7 @@ public:
 					if (getMode() == 1) {
 						ClickButton("char");
 					}
-					setCurChar(c);
+					setCurChar(c >= 0x40 ? c + 64 : c);
 				});
 
 			characterButtons->add(b);

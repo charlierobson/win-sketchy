@@ -121,7 +121,6 @@ void dfileRegion::update(olc::PixelGameEngine* pge) {
 		}
 		if (rButton.bPressed) {
 			_core->getDFile()->paste(_core->getCopyBuffer());
-			_core->getDFile()->paste(_core->getCopyBuffer());
 			_core->ClickButton("paste");
 		}
 	}

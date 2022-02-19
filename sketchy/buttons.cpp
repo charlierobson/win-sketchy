@@ -73,13 +73,9 @@ void charsetButton::draw(olc::PixelGameEngine* pge) {
 void charsetButton::select(bool selected) {
 	auto wasSelected = _selected;
 	button::select(selected);
-	if (selected && !wasSelected) {
-		auto c = _char;
-		if (c > 63) c += 64;
 
-		if (_onSelect) {
-			_onSelect(_char);
-		}
+	if (_onSelect) {
+		_onSelect(_char);
 	}
 }
 

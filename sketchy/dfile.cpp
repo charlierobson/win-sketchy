@@ -54,28 +54,28 @@ void dfile::doPlot(int x, int y, int mode) {
     auto i = x / 2 + y / 2 * 32;
     auto c = _dfile[i];
 
-if ((c & 127) > 8) {
-    c = 0;
-}
-if (c > 127) {
-    c ^= 0x8f;
-}
+    if ((c & 127) > 8) {
+        c = 0;
+    }
+    if (c > 127) {
+        c ^= 0x8f;
+    }
 
-if (mode == 0) {
-    c = ~b & c;
-}
-else if (mode == 1) {
-    c |= b;
-}
-else {
-    c = c ^ b;
-}
+    if (mode == 0) {
+        c = ~b & c;
+    }
+    else if (mode == 1) {
+        c |= b;
+    }
+    else {
+        c = c ^ b;
+    }
 
-if (c > 7) {
-    c ^= 0x8f;
-}
+    if (c > 7) {
+        c ^= 0x8f;
+    }
 
-_dfile[i] = c;
+    _dfile[i] = c;
 }
 
 void dfile::unplot(int x, int y) {
