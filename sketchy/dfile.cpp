@@ -107,9 +107,13 @@ void dfile::fill(int c) {
 void dfile::load(const std::string& filename) {
 
     auto n = 0;
-    std::string end = filename.substr(filename.size() - 4);
+    std::string end = filename.substr(filename.rfind("."));
 
-    if (end == ".bin") {
+    // bin, raw are dumps of the dfile without newlines.
+    // dfile is the whole dfile including newlines.
+    // because we just filter out newlines here we can treat them all equally
+    //
+    if (end == ".bin" || end == ".raw" || end == ".dfile") {
         std::ifstream binFile(filename, std::ios::binary);
         if (binFile.is_open()) {
 
@@ -121,7 +125,7 @@ void dfile::load(const std::string& filename) {
             }
         }
     }
-    else if (end == ".txt") {
+    else if (end == ".txt" || end == ".asm") {
         std::ifstream txtFile(filename);
         if (txtFile.is_open()) {
 
@@ -146,21 +150,45 @@ void dfile::load(const std::string& filename) {
 
 void dfile::save(const std::string& filename) {
 
-    std::ofstream txtFile(filename);
+    std::string end = filename.substr(filename.rfind("."));
 
-    if (txtFile.is_open())
-    {
-        int n = 0;
-        std::string rowText;
-        for (int line = 0; line < 24; ++line) {
-            txtFile << std::setw(8) << std::setfill('0') << "\t.byte\t$76";
-            for (int x = 0; x < 32; ++x) {
-                txtFile << ",$" << std::hex << std::setw(2) << std::setfill('0') << _dfile[x + line * 32];
+    if (end == ".asm" || end == ".txt") {
+
+        std::ofstream dfilefile(filename);
+
+        if (dfilefile.is_open())
+        {
+            for (int line = 0; line < 24; ++line) {
+                dfilefile << std::setw(8) << std::setfill('0') << "\t.byte\t$76";
+                for (int x = 0; x < 32; ++x) {
+                    dfilefile << ",$" << std::hex << std::setw(2) << std::setfill('0') << _dfile[x + line * 32];
+                }
+                dfilefile << std::endl;
             }
-            txtFile << std::endl;
+            dfilefile << "\t.byte\t$76";
+            dfilefile.close();
         }
-        txtFile << "\t\t.byte\t$76";
-        txtFile.close();
+    }
+    else if (end == ".bin" || end == ".raw" || end == ".dfile") {
+
+        // dump of characters only, no newlines
+        std::ofstream dfilefile(filename, std::ios::binary);
+
+        if (dfilefile.is_open())
+        {
+            if (end == ".dfile") {
+                dfilefile << (byte)0x76;
+            }
+            for (int line = 0; line < 24; ++line) {
+                for (int x = 0; x < 32; ++x) {
+                    dfilefile << (byte)_dfile[x + line * 32];
+                }
+                if (end == ".dfile") {
+                    dfilefile << (byte)0x76;
+                }
+            }
+            dfilefile.close();
+        }
     }
 }
 

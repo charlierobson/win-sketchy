@@ -37,7 +37,7 @@ private:
 
 		ofn.lStructSize = sizeof(ofn);
 		ofn.hwndOwner = nullptr;
-		ofn.lpstrFilter = "Text Files\0*.txt\0Any File\0*.*\0";
+		ofn.lpstrFilter = "Text Files (*.txt, *.asm)\0*.txt;*.asm\0Binary D-Files (*.dfile)\0*.dfile\0Raw Files (*.raw, *.bin)\0*.raw;*.bin\0Any File\0*.*\0";
 		ofn.lpstrFile = filename;
 		ofn.nMaxFile = MAX_PATH;
 		ofn.lpstrTitle = "S81ect a File";
