@@ -66,7 +66,7 @@ void charsetButton::draw(olc::PixelGameEngine* pge) {
 		c -= 64;
 	}
 
-	pge->DrawPartialSprite(_topLeft, _dfile->_charSet, olc::vi2d(0, c * 8), olc::vi2d(8, 8));
+	pge->DrawPartialSprite(_topLeft, _dfile->charSet(), olc::vi2d(0, c * 8), olc::vi2d(8, 8));
 	button::draw(pge);
 }
 
@@ -129,7 +129,7 @@ textButton::textButton(int x, int y, dfile* dfile, std::string text, std::functi
 
 void textButton::draw(olc::PixelGameEngine* pge) {
 	for (size_t i = 0; i < _text.size(); ++i) {
-		pge->DrawPartialSprite(_topLeft.x + i * 8, _topLeft.y, _dfile->_charSet, 0, dfile::ascii2zeddy(_text.c_str()[i]) * 8, 8, 8);
+		pge->DrawPartialSprite(_topLeft.x + i * 8, _topLeft.y, _dfile->charSet(), 0, dfile::ascii2zeddy(_text.c_str()[i]) * 8, 8, 8);
 	}
 	button::draw(pge);
 }

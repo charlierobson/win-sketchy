@@ -21,11 +21,13 @@ private:
 	olc::vi2d _selStart;
 	olc::vi2d _selEnd;
 
-public:
 	olc::Sprite* _charSet;
+	bool _opaquePaste;
 
 public:
 	dfile(olc::Sprite* charSet);
+
+	olc::Sprite* charSet() { return _charSet; }
 
 	void draw(olc::PixelGameEngine*);
 
@@ -72,6 +74,11 @@ public:
 	void rst88a(int);
 
 	copyBuffer copy();
+	void invert();
+
 	void paste(copyBuffer&);
 	void draw(olc::PixelGameEngine* pge, copyBuffer& cb);
+
+	bool getOpaquePaste() { return _opaquePaste; }
+	void setOpaquePaste(bool opaquePaste) { _opaquePaste = opaquePaste; }
 };

@@ -121,7 +121,7 @@ void dfileRegion::update(olc::PixelGameEngine* pge) {
 		}
 		if (rButton.bPressed) {
 			_core->getDFile()->paste(_core->getCopyBuffer());
-			_core->ClickButton("paste");
+			_core->getCopyBuffer().pos = olc::vi2d(0, 0);
 		}
 	}
 	break;

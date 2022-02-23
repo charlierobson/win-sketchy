@@ -53,7 +53,7 @@ private:
 public:
 	sketchy()
 	{
-		sAppName = "Sketchy ZX81 screen editor V1.31";
+		sAppName = "Sketchy ZX81 screen editor V1.4";
 	}
 
 	void setMode(int mode) {
@@ -128,8 +128,13 @@ public:
 			}));
 
 		auto pasteButton = new textButton(basex, 192 + 4, _dfile, "PASTE", [this]() {
-			setMode(5);
-			_copyBuffer.pos = olc::vi2d(0, 0);
+			if (getMode() == 5) {
+				getDFile()->setOpaquePaste(!getDFile()->getOpaquePaste());
+			}
+			else {
+				setMode(5);
+				_copyBuffer.pos = olc::vi2d(0, 0);
+			}
 			});
 		modeButtons->add(pasteButton);
 		_clickables["paste"] = std::pair<buttonRegion*, button*>(modeButtons, pasteButton);
@@ -165,30 +170,35 @@ public:
 			}, false));
 
 		workButtons->add(new textButton(8 + 4 * 8, 204, _dfile, "FILL", [this]() {
-				_dfile->fill(getCurChar());
+			_dfile->fill(getCurChar());
 			}, false));
 
-		workButtons->add(new textButton(8 + 9 * 8, 204, _dfile, "LOAD", [this]() {
-				DoFileOp([this](LPOPENFILENAMEA ofn) {
-					if (GetOpenFileNameA(ofn)) {
-						_dfile->load(ofn->lpstrFile);
-					}
-				});
+		workButtons->add(new textButton(8 + 9 * 8, 204, _dfile, "INVERT", [this]() {
+			_dfile->invert();
 			}, false));
 
-		workButtons->add(new textButton(8 + 14 * 8, 204, _dfile, "SAVE", [this]() {
-				DoFileOp([this](LPOPENFILENAMEA ofn) {
-					if (GetSaveFileNameA(ofn)) {
-						_dfile->save(ofn->lpstrFile);
-					}
-				} );
-			}, false));
-
-		workButtons->add(new textButton(8 + 19 * 8, 204, _dfile, "COPY", [this]() {
+		workButtons->add(new textButton(8 + 16 * 8, 204, _dfile, "COPY", [this]() {
 				DoCopy();
 			}, false));
 
 		_regions.push_back(workButtons);
+
+		workButtons->add(new textButton(8, 220, _dfile, "LOAD", [this]() {
+			DoFileOp([this](LPOPENFILENAMEA ofn) {
+				if (GetOpenFileNameA(ofn)) {
+					_dfile->load(ofn->lpstrFile);
+				}
+				});
+			}, false));
+
+		workButtons->add(new textButton(8 + 5 * 8, 220, _dfile, "SAVE", [this]() {
+			DoFileOp([this](LPOPENFILENAMEA ofn) {
+				if (GetSaveFileNameA(ofn)) {
+					_dfile->save(ofn->lpstrFile);
+				}
+				});
+			}, false));
+
 
 		auto pageButtons = new buttonRegion();
 		for (int i = 0; i < 4; ++i) {
@@ -269,7 +279,7 @@ public:
 int main()
 {
 	sketchy demo;
-	if (demo.Construct(364, 224, 2, 2))
+	if (demo.Construct(364, 236, 2, 2))
 		demo.Start();
 
 	return 0;

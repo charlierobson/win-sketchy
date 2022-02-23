@@ -9,10 +9,11 @@ dfile::dfile(olc::Sprite* charSet) :
     _dfile.resize(32 * 24);
     _selStart = olc::vi2d(0, 0);
     _selEnd = olc::vi2d(31, 23);
+    _opaquePaste = true;
 }
 
 int dfile::ascii2zeddy(int c) {
-    const char* zeddycs = " !!!!!!!!!!\"£$:?()><=+-*/;,.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const char* zeddycs = " !!!!!!!!!!\"\xa3$:?()><=+-*/;,.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; 
     auto idx = strrchr(zeddycs, toupper(c));
     if (idx == nullptr || *idx == '!') {
         return -1;
@@ -294,6 +295,25 @@ copyBuffer dfile::copy() {
     return cb;
 }
 
+
+void dfile::invert() {
+
+    olc::vi2d end;
+    copyBuffer cb;
+
+    getSelectRectNormal(cb.pos, end);
+
+    cb.w = end.x - cb.pos.x + 1;
+    cb.h = end.y - cb.pos.y + 1;
+    cb.data.resize(cb.w * cb.h);
+    for (int y = 0; y < cb.h; ++y) {
+        for (int x = 0; x < cb.w; ++x) {
+            _dfile[cb.pos.x + x + (cb.pos.y + y) * 32] = _dfile[cb.pos.x + x + (cb.pos.y + y) * 32] ^ 128;
+        }
+    }
+}
+
+
 void dfile::paste(copyBuffer& cb) {
 
     int sxo = 0;
@@ -317,7 +337,11 @@ void dfile::paste(copyBuffer& cb) {
 
     for (int x = 0; x < xc; x++)
         for (int y = 0; y < yc; y++) {
-            _dfile[pos.x + x + (pos.y + y) * 32] = cb.data[x + sxo + (y + syo) * cb.w];
+            auto c = cb.data[x + sxo + (y + syo) * cb.w];
+            if (!_opaquePaste && c == 0)
+                continue;
+
+            _dfile[pos.x + x + (pos.y + y) * 32] = c;
         }
 }
 
@@ -351,6 +375,10 @@ void dfile::draw(olc::PixelGameEngine* pge, copyBuffer& cb) {
             if (c >= 128) {
                 c -= 64;
             }
+
+            if (!_opaquePaste && c == 0)
+                continue;
+
             pge->DrawPartialSprite((x + pos.x) * 8 + xo, (y + pos.y) * 8 + yo, _charSet, 0, c * 8, 8, 8);
         }
 
