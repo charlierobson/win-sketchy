@@ -9,5 +9,7 @@ Check the [wiki](https://github.com/charlierobson/win-sketchy/wiki) for a users 
 
 todo:  
 Saving of regions as 'sprites'?
+Simple undo?
+Screenshot?
 
 bugs:
