@@ -7,8 +7,7 @@ The idea was it could then be cross-platform but quickly I hammered in windows s
 
 Check the [wiki](https://github.com/charlierobson/win-sketchy/wiki) for a users guide etc.
 
-todo:
-Different data formats, bin, raw, etc.
+todo:  
 Saving of regions as 'sprites'?
 
 bugs:
