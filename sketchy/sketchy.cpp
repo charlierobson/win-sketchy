@@ -102,7 +102,7 @@ public:
 	{
 		auto sprite = new olc::Sprite("zx81font.png");
 
-		for (int i = 0; i < 4; ++i) {
+		for (int i = 0; i < 5; ++i) {
 			_dfiles.push_back(new dfile(sprite));
 		}
 
@@ -111,11 +111,17 @@ public:
 		int basex = 32 * 8 + 16;
 
 		auto modeButtons = new buttonRegion();
-		auto charButton = new textButton(basex, 192 - 20, _dfile, "CHAR", [this]() {setMode(0); });
+		auto charButton = new textButton(basex, 192 - 20, _dfile, "CHAR", [this]() {
+			setMode(0);
+			_dfile->copyTo(*_dfiles[4]);
+			});
 		modeButtons->add(charButton);
 		_clickables["char"] = std::pair<buttonRegion*, button*>(modeButtons, charButton);
 		modeButtons->select(charButton);
-		modeButtons->add(new textButton(basex + 40, 192 - 20, _dfile, "BLOCK", [this]() {setMode(1); }));
+		modeButtons->add(new textButton(basex + 40, 192 - 20, _dfile, "BLOCK", [this]() {
+			setMode(1);
+			_dfile->copyTo(*_dfiles[4]);
+			}));
 		auto selectButton = new textButton(basex, 192 - 8, _dfile, "SELECT", [this]() {setMode(2); });
 		modeButtons->add(selectButton);
 		_clickables["select"] = std::pair<buttonRegion*, button*>(modeButtons, selectButton);
@@ -125,6 +131,7 @@ public:
 				olc::vi2d tl, br;
 				_dfile->getSelectRect(tl, br);
 				_dfile->setSelectRect(tl, tl);
+				_dfile->copyTo(*_dfiles[4]);
 			}));
 
 		auto pasteButton = new textButton(basex, 192 + 4, _dfile, "PASTE", [this]() {
@@ -135,6 +142,7 @@ public:
 				setMode(5);
 				_copyBuffer.pos = olc::vi2d(0, 0);
 			}
+			_dfile->copyTo(*_dfiles[4]);
 			});
 		modeButtons->add(pasteButton);
 		_clickables["paste"] = std::pair<buttonRegion*, button*>(modeButtons, pasteButton);
@@ -152,6 +160,7 @@ public:
 						ClickButton("char");
 					}
 					setCurChar(c >= 0x40 ? c + 64 : c);
+					_dfile->copyTo(*_dfiles[4]);
 				});
 
 			characterButtons->add(b);
@@ -166,10 +175,12 @@ public:
 
 		auto workButtons = new buttonRegion();
 		workButtons->add(new textButton(8, 204, _dfile, "CLS", [this]() {
-				_dfile->cls();
+			_dfile->copyTo(*_dfiles[4]);
+			_dfile->cls();
 			}, false));
 
 		workButtons->add(new textButton(8 + 4 * 8, 204, _dfile, "FILL", [this]() {
+			_dfile->copyTo(*_dfiles[4]);
 			_dfile->fill(getCurChar());
 			}, false));
 
@@ -184,6 +195,7 @@ public:
 		_regions.push_back(workButtons);
 
 		workButtons->add(new textButton(8, 220, _dfile, "LOAD", [this]() {
+			_dfile->copyTo(*_dfiles[4]);
 			DoFileOp([this](LPOPENFILENAMEA ofn) {
 				if (GetOpenFileNameA(ofn)) {
 					_dfile->load(ofn->lpstrFile);
@@ -199,6 +211,9 @@ public:
 				});
 			}, false));
 
+		workButtons->add(new textButton(8 + 10 * 8, 220, _dfile, "UNDO", [this]() {
+			_dfiles[4]->copyTo(*_dfile);
+			}, false));
 
 		auto pageButtons = new buttonRegion();
 		for (int i = 0; i < 4; ++i) {

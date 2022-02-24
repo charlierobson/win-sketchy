@@ -29,6 +29,10 @@ public:
 
 	olc::Sprite* charSet() { return _charSet; }
 
+	void copyTo(dfile& other) {
+		other._dfile = _dfile;
+	}
+
 	void draw(olc::PixelGameEngine*);
 
 	void cls();
