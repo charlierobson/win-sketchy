@@ -28,6 +28,15 @@ private:
 	dfile* _dfile;
 
 private:
+	const char* filters[6] = {
+		"",
+		".txt",
+		".dfile",
+		".raw",
+		".scr",
+		""
+	};
+
 	void DoFileOp(std::function<void(LPOPENFILENAME)> action) {
 		OPENFILENAME ofn;
 		char filename[MAX_PATH];
@@ -37,7 +46,7 @@ private:
 
 		ofn.lStructSize = sizeof(ofn);
 		ofn.hwndOwner = nullptr;
-		ofn.lpstrFilter = "Text Files (*.txt, *.asm)\0*.txt;*.asm\0Binary D-Files (*.dfile)\0*.dfile\0Raw Files (*.raw, *.bin)\0*.raw;*.bin\0Any File\0*.*\0";
+		ofn.lpstrFilter = "Text Files (*.txt, *.asm)\0*.txt;*.asm\0Binary D-Files (*.dfile)\0*.dfile\0Raw Files (*.raw, *.bin)\0*.raw;*.bin\0'Wall' Files (*.scr)\0*.scr\0Any File\0*.*\0";
 		ofn.lpstrFile = filename;
 		ofn.nMaxFile = MAX_PATH;
 		ofn.lpstrTitle = "S81ect a File";
@@ -53,7 +62,7 @@ private:
 public:
 	sketchy()
 	{
-		sAppName = "Sketchy ZX81 screen editor V1.4";
+		sAppName = "Sketchy ZX81 screen editor V1.5";
 	}
 
 	void setMode(int mode) {
@@ -206,7 +215,11 @@ public:
 		workButtons->add(new textButton(8 + 5 * 8, 220, _dfile, "SAVE", [this]() {
 			DoFileOp([this](LPOPENFILENAMEA ofn) {
 				if (GetSaveFileNameA(ofn)) {
-					_dfile->save(ofn->lpstrFile);
+					std::string fileName(ofn->lpstrFile);
+					if (ofn->nFileExtension == 0) {
+						fileName.append(filters[ofn->nFilterIndex]);
+					}
+					_dfile->save(fileName);
 				}
 				});
 			}, false));

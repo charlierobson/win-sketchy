@@ -108,13 +108,19 @@ void dfile::fill(int c) {
 void dfile::load(const std::string& filename) {
 
     auto n = 0;
-    std::string end = filename.substr(filename.rfind("."));
+
+    auto ext = filename.rfind(".");
+    if (ext == std::string::npos) {
+        return;
+    }
+
+    std::string end = filename.substr(ext);
 
     // bin, raw are dumps of the dfile without newlines.
     // dfile is the whole dfile including newlines.
     // because we just filter out newlines here we can treat them all equally
     //
-    if (end == ".bin" || end == ".raw" || end == ".dfile") {
+    if (end == ".bin" || end == ".raw" || end == ".dfile" || end == ".scr") {
         std::ifstream binFile(filename, std::ios::binary);
         if (binFile.is_open()) {
 
@@ -151,7 +157,12 @@ void dfile::load(const std::string& filename) {
 
 void dfile::save(const std::string& filename) {
 
-    std::string end = filename.substr(filename.rfind("."));
+    auto ext = filename.rfind(".");
+    if (ext == std::string::npos) {
+        return;
+    }
+
+    std::string end = filename.substr(ext);
 
     if (end == ".asm" || end == ".txt") {
 
@@ -170,9 +181,8 @@ void dfile::save(const std::string& filename) {
             dfilefile.close();
         }
     }
-    else if (end == ".bin" || end == ".raw" || end == ".dfile") {
+    else if (end == ".bin" || end == ".raw" || end == ".dfile" || end == ".scr") {
 
-        // dump of characters only, no newlines
         std::ofstream dfilefile(filename, std::ios::binary);
 
         if (dfilefile.is_open())
@@ -185,6 +195,9 @@ void dfile::save(const std::string& filename) {
                     dfilefile << (byte)_dfile[x + line * 32];
                 }
                 if (end == ".dfile") {
+                    dfilefile << (byte)0x76;
+                }
+                if (end == ".scr" && line != 23) {
                     dfilefile << (byte)0x76;
                 }
             }
