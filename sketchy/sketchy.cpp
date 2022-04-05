@@ -11,6 +11,8 @@
 #include <regex>
 #include <iomanip>
 
+extern unsigned char zx81Font[];
+
 class sketchy : public olc::PixelGameEngine, sketchyIf
 {
 private:
@@ -53,9 +55,12 @@ private:
 			strcpy_s(filename, MAX_PATH, defaultName->c_str());
 		}
 
+		auto loadFilter = "Asm Files (*.txt, *.asm)\0*.txt;*.asm\0Binary Files (*.raw, *.bin)\0*.raw;*.bin\0D-File Binary Files (*.dfile)\0*.dfile\0Font Files (*.fnt)\0*.fnt\0'Wall' Files (*.scr)\0*.scr\0Any File\0*.*\0";
+		auto saveFilter = "Asm Files (*.txt, *.asm)\0*.txt;*.asm\0Binary Files (*.raw, *.bin)\0*.raw;*.bin\0D-File Binary Files (*.dfile)\0*.dfile\0'Wall' Files (*.scr)\0*.scr\0Any File\0*.*\0";
+
 		ofn.lStructSize = sizeof(ofn);
 		ofn.hwndOwner = nullptr;
-		ofn.lpstrFilter = "Text Files (*.txt, *.asm)\0*.txt;*.asm\0Binary D-Files (*.dfile)\0*.dfile\0Raw Files (*.raw, *.bin)\0*.raw;*.bin\0'Wall' Files (*.scr)\0*.scr\0Any File\0*.*\0";
+		ofn.lpstrFilter = defaultName == nullptr ? loadFilter : saveFilter; // kludgy - defaultname is null when loading
 		ofn.lpstrFile = filename;
 		ofn.nMaxFile = MAX_PATH;
 		ofn.lpstrTitle = "S81ect a File";
@@ -71,7 +76,7 @@ private:
 public:
 	sketchy()
 	{
-		sAppName = "Sketchy ZX81 screen editor V1.6";
+		sAppName = "Sketchy ZX81 screen editor V1.7";
 	}
 
 	void setMode(int mode) {
@@ -158,10 +163,24 @@ public:
 
 	bool OnUserCreate() override
 	{
-		auto sprite = new olc::Sprite("zx81font.png");
+		auto charset = new olc::Sprite(8, 1024);
+
+		olc::vi2d pos(0, 0);
+		for (int i = 0; i < 1024; ++i) {
+			auto pix = zx81Font[i];
+
+			for (int b = 0, m = 128; b < 8; ++b, m >>= 1) {
+				pos.x = b;
+				if ((pix & m) != 0)
+					charset->SetPixel(pos, olc::BLACK);
+				else
+					charset->SetPixel(pos, olc::WHITE);
+			}
+			++pos.y;
+		}
 
 		for (int i = 0; i < 5; ++i) {
-			_dfiles.push_back(new dfile(sprite));
+			_dfiles.push_back(new dfile(charset));
 		}
 
 		_dfile = _dfiles[0];
@@ -257,8 +276,7 @@ public:
 			_dfile->copyTo(*_dfiles[4]);
 			DoFileOp([this](LPOPENFILENAMEA ofn) {
 				if (GetOpenFileNameA(ofn)) {
-					_dfile->load(ofn->lpstrFile);
-					_currentFile = ofn->lpstrFile;
+					OnDropFile(ofn->lpstrFile);
 				}
 				}, NULL);
 			}, false));

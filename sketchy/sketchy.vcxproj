@@ -144,6 +144,7 @@
     <ClCompile Include="buttons.cpp" />
     <ClCompile Include="dfile.cpp" />
     <ClCompile Include="sketchy.cpp" />
+    <ClCompile Include="zx81font.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="3dm.h" />
