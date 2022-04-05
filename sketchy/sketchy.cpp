@@ -264,6 +264,11 @@ public:
 			}, false));
 
 		workButtons->add(new textButton(8 + 5 * 8, 220, _dfile, "SAVE", [this]() {
+			if (GetKey(olc::Key::CTRL).bHeld && !_currentFile.empty()) {
+				_dfile->save(_currentFile);
+				return;
+			}
+
 			DoFileOp([this](LPOPENFILENAMEA ofn) {
 				if (GetSaveFileNameA(ofn)) {
 					std::string fileName(ofn->lpstrFile);
