@@ -69,6 +69,14 @@ void dfileRegion::update(olc::PixelGameEngine* pge) {
 
 	switch (_core->getMode()) {
 	case 0:
+		if (pge->GetKey(olc::Key::CTRL).bHeld) {
+			if (lButton.bHeld) {
+				int c = _core->getDFile()->peek(mousePos.x / 8, mousePos.y / 8);
+				if (c > 127) c -= 64;
+				_core->ClickButton("schar" + std::to_string(c));
+			}
+			return;
+		}
 		if (lButton.bHeld) {
 			_core->getDFile()->poke(mousePos.x / 8, mousePos.y / 8, _core->getCurChar());
 		}

@@ -8,6 +8,9 @@
 
 #include "3dm.h"
 
+#include <regex>
+#include <iomanip>
+
 class sketchy : public olc::PixelGameEngine, sketchyIf
 {
 private:
@@ -22,6 +25,8 @@ private:
 	int _curChar = 0;
 
 	copyBuffer _copyBuffer;
+	
+	std::string _currentFile = "";
 
 	olc::Pixel _selectColour = olc::DARK_YELLOW;
 
@@ -37,12 +42,16 @@ private:
 		""
 	};
 
-	void DoFileOp(std::function<void(LPOPENFILENAME)> action) {
+	void DoFileOp(std::function<void(LPOPENFILENAME)> action, std::string* defaultName) {
 		OPENFILENAME ofn;
 		char filename[MAX_PATH];
 
 		ZeroMemory(&ofn, sizeof(ofn));
 		ZeroMemory(&filename, sizeof(filename));
+
+		if (defaultName != nullptr) {
+			strcpy_s(filename, MAX_PATH, defaultName->c_str());
+		}
 
 		ofn.lStructSize = sizeof(ofn);
 		ofn.hwndOwner = nullptr;
@@ -62,7 +71,7 @@ private:
 public:
 	sketchy()
 	{
-		sAppName = "Sketchy ZX81 screen editor V1.5";
+		sAppName = "Sketchy ZX81 screen editor V1.6";
 	}
 
 	void setMode(int mode) {
@@ -104,7 +113,47 @@ public:
 public:
 	void OnDropFile(const std::string& filename) override
 	{
+		auto ext = filename.rfind(".");
+		if (ext == std::string::npos) {
+			return;
+		}
+
+		std::string end = filename.substr(ext);
+		if (end == ".fnt") {
+
+			std::ifstream txtFile(filename);
+			if (txtFile.is_open()) {
+
+				std::string line;
+				std::regex reg((const char*)"\\$[0-9A-Fa-f]{2}");
+
+				auto charset = _dfile->charSet();
+
+				olc::vi2d pos(0, 0);
+
+				while (getline(txtFile, line)) {
+					for (std::sregex_iterator it = std::sregex_iterator(line.begin(), line.end(), reg); it != std::sregex_iterator(); ++it) {
+						std::smatch match = *it;
+						auto mc = match.str().substr(1, 2);
+						auto pix = std::strtol(mc.c_str(), nullptr, 16);
+
+						for (int b = 0, m = 128; b < 8; ++b, m >>= 1) {
+							pos.x = b;
+							if ((pix & m) != 0)
+								charset->SetPixel(pos, olc::BLACK);
+							else
+								charset->SetPixel(pos, olc::WHITE);
+						}
+						++pos.y;
+					}
+				}
+				txtFile.close();
+			}
+			return;
+		}
+
 		_dfile->load(filename);
+		_currentFile = filename;
 	}
 
 	bool OnUserCreate() override
@@ -173,6 +222,7 @@ public:
 				});
 
 			characterButtons->add(b);
+			_clickables["schar" + std::to_string(i)] = std::pair<buttonRegion*, button*>(characterButtons, b);
 
 			if (i == 64) {
 				characterButtons->select(b);
@@ -208,8 +258,9 @@ public:
 			DoFileOp([this](LPOPENFILENAMEA ofn) {
 				if (GetOpenFileNameA(ofn)) {
 					_dfile->load(ofn->lpstrFile);
+					_currentFile = ofn->lpstrFile;
 				}
-				});
+				}, NULL);
 			}, false));
 
 		workButtons->add(new textButton(8 + 5 * 8, 220, _dfile, "SAVE", [this]() {
@@ -220,8 +271,9 @@ public:
 						fileName.append(filters[ofn->nFilterIndex]);
 					}
 					_dfile->save(fileName);
+					_currentFile = fileName;
 				}
-				});
+				}, &_currentFile);
 			}, false));
 
 		workButtons->add(new textButton(8 + 10 * 8, 220, _dfile, "UNDO", [this]() {
